@@ -1,0 +1,201 @@
+import math
+
+class Vertex:
+    def __init__(self, name=None,parent=None,br=None):
+        self.name=name
+        self.parent=parent
+        self.br=br
+
+
+class Edge:
+    def __init__(self,src=None,dst=None,weg=None):
+        self.src=src
+        self.dst=dst
+        self.weg=weg
+
+class Graph:
+    def __init__(self,V=None,E=None):
+        self.V=V
+        self.E=E
+
+
+def MakeGraph():
+    a = Vertex(name='a')
+    b = Vertex(name='b')
+    c = Vertex(name='c')
+    d = Vertex(name='d')
+    e = Vertex(name='e')
+    f = Vertex(name='f')
+    g = Vertex(name='g')
+    h = Vertex(name='h')
+
+    V=[a,b,c,d,e,f,g,h]
+
+    ab = Edge(src=a, dst=b, weg=5)
+    ad = Edge(src=a, dst=d, weg=8)
+    bd = Edge(src=b, dst=d, weg=9)
+    dc = Edge(src=d, dst=c, weg=1)
+    de = Edge(src=d, dst=e, weg=10)
+    df = Edge(src=d, dst=f, weg=13)
+    fg = Edge(src=f, dst=g, weg=20)
+    eg = Edge(src=e, dst=g, weg=7)
+    he = Edge(src=h, dst=e, weg=2)
+    hg = Edge(src=h, dst=g, weg=24)
+    hc = Edge(src=h, dst=c, weg=16)
+
+    E=[ab,ad,bd,dc,de,df,fg,eg,he,hg,hc]
+
+    G=Graph(V=V,E=E)
+
+
+    return G
+
+def GetInDegrees(G):
+    lista = []
+
+    for v in G.V:
+        counter =0
+        for e in G.E:
+            if e.dst == v:
+                counter+=1
+        lista.append(counter)
+
+    return lista
+
+def GetOutDegrees(G):
+    lista = []
+
+    for v in G.V:
+        counter =0
+        for e in G.E:
+            if e.src == v:
+                counter+=1
+        lista.append(counter)
+
+    return lista
+
+def InitialzeSingleSource(G,s):
+    for v in G.V:
+        v.br = math.inf
+        v.parent = None
+    s.br = 0
+
+def Relax(u,v,w):
+    if v.br>u.br+w:
+        v.br = u.br + w
+        v.parent = u
+
+def Extract_min(Q):
+
+    min = Q[0]
+
+    for v in Q:
+        if v.br < min.br:
+            min=v
+
+    Q.remove(min)
+    return  min
+
+def GetAdj(G,x):
+    li = []
+    for e in G.E:
+        if e.src == x:
+            li.append(e.dst)
+    return li
+
+def Bellman_Ford(G,s):
+    InitialzeSingleSource(G,s)
+    for v in G.V:
+        for e in G.E:
+            Relax(e.src,e.dst,e.weg)
+    for e in G.E:
+        if e.dst.br > e.src.br + e.weg:
+            return False
+    return True
+
+def GetWaight(G,a,b):
+    te = 0
+    for e in G.E:
+        if e.src == a and e.dst == b:
+            te = e.weg
+    return te
+
+def Daixtra(G,s):
+    InitialzeSingleSource(G,s)
+    S=[]
+    Q=[]
+    for v in G.V:
+        Q.append(v)
+    while len(Q)>0:
+        u = Extract_min(Q)
+        S.append(u)
+        for v in GetAdj(G,u):
+            Relax(u,v,GetWaight(G,u,v))
+    return True
+
+
+def PrintShortestPath(G,a,b,li):
+
+    if a==b:
+        li.append(b)
+    elif b.parent is not None:
+        PrintShortestPath(G,a,b.parent,li)
+        li.append(b)
+    else:
+        print("nema putanje")
+
+def ShortestPath(G,nodeA, nodeB):
+    li = []
+    if Daixtra(G,nodeA):
+        PrintShortestPath(G,nodeA,nodeB,li)
+        return li,nodeB.br
+    else:
+        print("nema putanje")
+
+def GetNode(G,name):
+    for v in G.V:
+        if v.name == name:
+            return v
+
+def UpdateEdge(G,nodeA,nodeB,weight):
+
+    for e in G.E:
+        if e.src == nodeA and e.dst == nodeB:
+            e.weg = weight
+            return
+
+    newe = Edge(src=nodeA,dst=nodeB,weg=weight)
+    G.E.append(newe)
+
+
+gr = MakeGraph()
+li=GetInDegrees(gr)
+for l in li:
+    print(l)
+
+print('\n')
+
+lo=GetOutDegrees(gr)
+for l in lo:
+    print(l)
+
+lis = []
+dis = 0
+
+a = GetNode(gr,'a')
+g = GetNode(gr,'g')
+h = GetNode(gr,'h')
+
+lis,dis = ShortestPath(gr,h,g)
+
+print(dis)
+for l in lis:
+    print(l.name)
+
+UpdateEdge(gr,h,g,5)
+
+lis,dis = ShortestPath(gr,h,g)
+
+print(dis)
+for l in lis:
+    print(l.name)
