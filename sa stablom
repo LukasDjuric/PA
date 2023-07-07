@@ -1,0 +1,200 @@
+#Luka Djuric RA101-2020
+import math
+class Vertex:
+    def __init__(self, name=None,parent=None,distance=None,left=None,right=None,par=None):
+        self.name=name
+        self.parent=parent
+        self.distance=distance
+
+        self.left=left
+        self.right=right
+        self.par=par
+
+    def __str__(self):
+        return str(self.name) + " distanca: " + str(self.distance)
+
+
+class Edge:
+    def __init__(self, src=None,dst=None,wgh=None):
+        self.src=src
+        self.dst=dst
+        self.wgh=wgh
+
+class Graph:
+    def __init__(self,V=None,E=None):
+        self.V=V
+        self.E=E
+
+    def __str__(self):
+        out = ""
+        for e in self.E:
+            out += str(e.src.name) + " -> " + str(e.dst.name) + " w=" + str(e.wgh) + "\n"
+        return out
+
+class Tree:
+    def __init__(self,root=None):
+        self.root=root
+
+def TreeInsert(T,z):
+    y = None
+    x = T.root
+    while x is not None:
+        y = x
+        if z.name < x.name:
+            x = x.left
+        else:
+            x = x.right
+    z.par = y
+    if y is None:
+        T.root = z
+    elif z.name < y.name:
+        y.left = z
+    else:
+        y.right = z
+
+def MakeTree(sopa):
+    tree = Tree()
+    for v in sopa:
+        TreeInsert(tree,v)
+
+    return tree
+
+def inorderThreeWalk(x):
+    if x is not None:
+        inorderThreeWalk(x.left)
+        print(x)
+        inorderThreeWalk(x.right)
+
+
+def MakeGraph():
+
+    a = Vertex(name = 60)
+    b = Vertex(name = 58)
+    c = Vertex(name = 62)
+    d = Vertex(name = 42)
+    e = Vertex(name = 45)
+    f = Vertex(name = 22)
+    g = Vertex(name = 47)
+
+    V = [a,b,c,d,e,f,g]
+
+    ab = Edge(a, b, 2)
+    ac = Edge(a, c, 14)
+    bd = Edge(b, d, 4)
+    da = Edge(d, a, 8)
+    dc = Edge(d, c, 10)
+    be = Edge(b, e, 9)
+    de = Edge(d, e, 2)
+    dg = Edge(d, g, 3)
+    eg = Edge(e, g, 10)
+    gf = Edge(g, f, 5)
+    fc = Edge(f, c, 1)
+    fd = Edge(f, d, 2)
+
+    E = [ab,ac,bd,da,dc,be,de,dg,eg,gf,fc,fd]
+
+    G = Graph(V=V,E=E)
+
+    return G
+
+
+def INITIALIZE_SINGLE_SOURCE(G,s):
+    for v in G.V:
+        v.distance = math.inf
+        v.parent = None
+    s.distance = 0
+
+def Extract_Min(Q):
+    min = Q[0]
+    for v in Q:
+        if v.distance < min.distance:
+            min = v
+
+    Q.remove(min)
+    return  min
+
+def GetAdj(G,u):
+    li=[]
+    for e in G.E:
+        if e.src == u:
+            li.append(e.dst)
+
+    return li
+
+def Relax(u,v,w):
+    if v.distance > u.distance + w:
+        v.distance = u.distance + w
+        v.parent = u
+
+def GetWaight(G,sr,ds):
+    w=0
+    for e in G.E:
+        if e.src == sr and e.dst == ds:
+            w=e.wgh
+    return w
+
+def Dijkstra(G,s):
+    INITIALIZE_SINGLE_SOURCE(G,s)
+    S = []
+    Q = G.V[:]
+    while len(Q)>0:
+        u = Extract_Min(Q)
+        S.append(u)
+        for v in GetAdj(G,u):
+            Relax(u,v,GetWaight(G,u,v))
+
+def GetNode(G,s):
+    for v in G.V:
+        if v.name == s:
+            return v
+
+def ShortestPath(G, nodeA, nodeB):
+    Dijkstra(G, nodeA)
+    dist = 0
+
+    for v in G.V:
+        if v == nodeB:
+            dist = v.distance
+
+    tmpc = nodeB
+    lis = []
+
+    while tmpc.parent is not None:
+        lis.insert(0,tmpc)
+        tmpc = tmpc.parent
+    lis.insert(0,nodeA)
+
+    return (dist,lis)
+
+
+G = MakeGraph()
+
+print("Prvi i jedini odradjeni funkcionalni zadatak")
+print(G)
+
+print("Zadatak pod b")
+
+a = GetNode(G,58)
+b = GetNode(G,62)
+
+Dijkstra(G,a)
+
+for v in G.V:
+    print(v)
+
+
+tup = ShortestPath(G,a,b)
+
+print(tup[0])
+
+for v in tup[1]:
+    print(v)
+
+tree = MakeTree(tup[1])
+
+if tree is None:
+    print("no")
+else:
+    print("yes")
+
+inorderThreeWalk(a)
